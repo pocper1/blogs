@@ -1,0 +1,83 @@
+---
+title: "5 TypeScript Patterns I Use Every Day"
+date: "2026-03-20"
+tags: ["typescript", "programming"]
+excerpt: "Practical TypeScript patterns that make code safer and more readable — without over-engineering."
+published: true
+---
+
+TypeScript's type system is powerful, but it's easy to over-engineer. Here are five patterns I reach for daily.
+
+## 1. Discriminated Unions for State
+
+Instead of a bundle of optional fields, use a union type:
+
+```typescript
+// Bad: unclear which fields are set
+interface State {
+  loading: boolean
+  data?: User
+  error?: string
+}
+
+// Good: states are mutually exclusive
+type State =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: User }
+  | { status: 'error'; message: string }
+```
+
+The compiler now forces you to handle every case in a `switch`.
+
+## 2. Branded Types for IDs
+
+Prevent mixing up different ID types at compile time:
+
+```typescript
+type UserId = string & { readonly __brand: 'UserId' }
+type PostId = string & { readonly __brand: 'PostId' }
+
+function brandUserId(id: string): UserId {
+  return id as UserId
+}
+
+function getUser(id: UserId): User { /* ... */ }
+
+const postId = brandUserId('post-123') as PostId  // type error!
+```
+
+## 3. Satisfies Operator
+
+Validate an object against a type without widening:
+
+```typescript
+const config = {
+  theme: 'dark',
+  lang: 'en',
+  maxPosts: 10,
+} satisfies Partial<BlogConfig>
+
+// config.theme is typed as 'dark', not string
+```
+
+## 4. Const Assertions for Tuples
+
+```typescript
+const TAGS = ['typescript', 'nextjs', 'devops'] as const
+type Tag = typeof TAGS[number]  // 'typescript' | 'nextjs' | 'devops'
+```
+
+## 5. Infer in Conditional Types
+
+Extract types from generic wrappers:
+
+```typescript
+type Unwrap<T> = T extends Promise<infer U> ? U : T
+
+type Result = Unwrap<Promise<User>>  // User
+```
+
+---
+
+These aren't advanced tricks — they're the fundamentals that make TypeScript actually useful. The goal is always: catch bugs at compile time, not runtime.

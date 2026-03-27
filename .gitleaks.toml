@@ -1,0 +1,23 @@
+title = "Blog – gitleaks configuration"
+
+# gitleaks detects 150+ secret types by default (AWS keys, GitHub tokens,
+# private keys, connection strings, JWT secrets, etc.).
+# This file only needs to allowlist patterns that are *intentionally* present.
+
+[allowlist]
+  description = "Known-safe patterns for this repository"
+
+  # Files that are safe to skip
+  paths = [
+    # Lockfile — hash strings can trigger generic entropy rules
+    '''pnpm-lock\.yaml''',
+    # This config file itself
+    '''\.gitleaks\.toml''',
+  ]
+
+  # Regex patterns that look like secrets but are intentionally present
+  regexes = [
+    # GitHub Actions secret interpolation syntax — NOT actual secret values,
+    # just references: ${{ secrets.VPS_HOST }}, ${{ secrets.SITE_URL }}, etc.
+    '''\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}''',
+  ]

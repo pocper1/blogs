@@ -1,0 +1,57 @@
+---
+title: "Hello World: Starting My Blog"
+date: "2026-03-01"
+tags: ["meta", "writing"]
+excerpt: "Why I started this blog and what to expect going forward."
+published: true
+---
+
+Welcome to my blog! This is the first post, written in MDX.
+
+## Why I Started Writing
+
+Writing forces clarity. When you can't explain something simply, you probably don't understand it well enough. This blog is as much for me as it is for you.
+
+## What to Expect
+
+I'll be writing about:
+
+- **Software engineering** — TypeScript, system design, architecture patterns
+- **DevOps & infrastructure** — VPS management, CI/CD, containers
+- **Open source** — tools I build and use
+
+## The Stack
+
+This blog is built with **Next.js 15**, deployed as a static site to a VPS via **GitHub Actions + rsync**. Posts are written in **MDX**, giving me the power to embed components inline.
+
+Here's the deployment pipeline at a glance:
+
+```bash title="Deploy flow"
+# 1. Write a post in content/posts/new-post.mdx
+# 2. Push to main branch
+git add . && git commit -m "feat: add new post" && git push
+
+# GitHub Actions then:
+# → pnpm install → next build → rsync out/ to VPS
+```
+
+## Code Highlighting
+
+Syntax highlighting works beautifully with Shiki:
+
+```typescript title="src/lib/posts.ts"
+export function getAllPostsMeta(): PostMeta[] {
+  return getPostSlugs()
+    .map((slug) => getPostBySlug(slug))
+    .filter((post) => post.published !== false)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+}
+```
+
+<Callout type="tip">
+You can use `<Callout type="info|tip|warning|danger">` anywhere in your MDX posts to highlight important information.
+</Callout>
+
+> "The scariest moment is always just before you start." — Stephen King
+
+That's all for now. More posts coming soon.

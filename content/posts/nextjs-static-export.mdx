@@ -1,0 +1,75 @@
+---
+title: "Next.js Static Export: Deploy Anywhere"
+date: "2026-03-10"
+tags: ["nextjs", "deployment", "vps"]
+excerpt: "How to use Next.js output: export to generate a fully static site and host it on any VPS with Nginx."
+published: true
+---
+
+Next.js is often associated with Vercel, but you can self-host a statically exported Next.js site on any server — including your own VPS.
+
+## What is Static Export?
+
+Setting `output: 'export'` in `next.config.mjs` tells Next.js to generate a plain HTML/CSS/JS output in the `out/` directory. No Node.js runtime needed at serve time.
+
+```js title="next.config.mjs"
+const nextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
+}
+```
+
+## Limitations
+
+When using static export, these features are **not available**:
+
+| Feature | Static Export |
+|---|---|
+| Image Optimization | ❌ (use `unoptimized: true`) |
+| Route Handlers (runtime) | ❌ (use postbuild scripts) |
+| Server Actions | ❌ |
+| ISR / On-demand revalidation | ❌ |
+| Middleware | ❌ |
+
+## Nginx Configuration
+
+After rsync-ing `out/` to your server, Nginx handles routing:
+
+```nginx title="/etc/nginx/sites-available/blog.conf"
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+    root /var/www/blog;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ $uri.html =404;
+    }
+
+    location /_next/static/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+The `try_files` directive handles Next.js `trailingSlash: true` output — each route like `/blog/my-post/` becomes `out/blog/my-post/index.html`.
+
+## GitHub Actions Pipeline
+
+```yaml title=".github/workflows/deploy.yml"
+- name: Deploy with rsync
+  run: |
+    rsync --archive --compress --delete \
+      out/ \
+      ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
+```
+
+Five required secrets: `VPS_SSH_PRIVATE_KEY`, `VPS_HOST`, `VPS_USER`, `VPS_DEPLOY_PATH`, `SITE_URL`.
+
+## Result
+
+Every `git push` to `main` triggers a full rebuild and deploy. The whole pipeline takes under 60 seconds for a typical blog.
