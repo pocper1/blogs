@@ -1,9 +1,9 @@
 import { defineAstroPaperConfig } from "./src/types/config";
 
 // SITE_URL comes from a GitHub Actions secret; tolerate values without a scheme
-const rawSiteUrl = process.env.SITE_URL?.trim().replace(/\/+$/, "");
+const rawSiteUrl = process.env.SITE_URL?.replace(/\s+/g, "").replace(/\/+$/, "");
 const siteUrl = rawSiteUrl
-  ? rawSiteUrl.startsWith("http")
+  ? /^https?:\/\//.test(rawSiteUrl)
     ? rawSiteUrl
     : `https://${rawSiteUrl}`
   : "http://localhost:4321";
