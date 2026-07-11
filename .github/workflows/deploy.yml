@@ -23,7 +23,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -37,13 +37,13 @@ jobs:
       - name: Build static site
         run: pnpm build
         env:
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.SITE_URL }}
+          SITE_URL: ${{ secrets.SITE_URL }}
 
       - name: Verify build output
         run: |
           echo "=== Build output ==="
-          ls -la out/
-          test -f out/index.html || (echo "ERROR: index.html missing" && exit 1)
+          ls -la dist/
+          test -f dist/index.html || (echo "ERROR: index.html missing" && exit 1)
           echo "Build verified successfully"
 
       - name: Setup SSH agent
@@ -71,7 +71,7 @@ jobs:
             --checksum \
             --human-readable \
             --rsh="ssh -p $VPS_SSH_PORT" \
-            out/ \
+            dist/ \
             "$VPS_USER@$VPS_HOST:$VPS_DEPLOY_PATH/"
 
       - name: Done
