@@ -1,8 +1,16 @@
 import { defineAstroPaperConfig } from "./src/types/config";
 
+// SITE_URL comes from a GitHub Actions secret; tolerate values without a scheme
+const rawSiteUrl = process.env.SITE_URL?.trim().replace(/\/+$/, "");
+const siteUrl = rawSiteUrl
+  ? rawSiteUrl.startsWith("http")
+    ? rawSiteUrl
+    : `https://${rawSiteUrl}`
+  : "http://localhost:4321";
+
 export default defineAstroPaperConfig({
   site: {
-    url: process.env.SITE_URL ?? "http://localhost:4321/",
+    url: siteUrl,
     title: "Jimmy's Blog",
     description: "Notes on backend engineering, infrastructure, and security.",
     author: "Jimmy Huang",
